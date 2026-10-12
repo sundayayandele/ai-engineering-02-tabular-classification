@@ -30,6 +30,11 @@ Scikit-learn preprocessing (numeric imputation and scaling, categorical imputati
 ## Engineering standards
 Python 3.12; FastAPI; pytest; Ruff; Prometheus; Docker; Kubernetes/OpenShift; cloud-neutral architecture with Terraform/OpenTofu examples. Model binaries, sensitive data, cloud secrets and generated artifacts must never be committed.
 
+## Architectures and Infographics
+![Architecture Diagrams](/diagrams/source/Customer%20Churn%20Architecture%20Blueprint.png)
+![Architecture Diagrams](/diagrams/source/Enterprise%20Churn%20Prediction%20Architecture%20Triptych.png)
+![Architecture Diagrams](/diagrams/source/Kubernetes%20Churn%20Prediction%20Architecture.png)
+
 ## Status
 Initial source is being uploaded from the mobile-friendly connected GitHub workflow. The full prepared ZIP is available in the chat. Production readiness requires full CI, security and infrastructure validation.
 
