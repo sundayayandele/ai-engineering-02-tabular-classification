@@ -1,0 +1,6 @@
+flowchart LR
+  Client["CRM Client"] --> Gateway["Gateway / Ingress"]
+  Gateway --> API["FastAPI Container"]
+  API --> Runtime["scikit-learn Pipeline"]
+  Runtime --> Artifact["Model Artifact"]
+  API --> Telemetry["Prometheus"]
