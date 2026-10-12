@@ -1,0 +1,99 @@
+name: small-pilot-lab
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: small-pilot-lab-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  simulate-two-replicas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install and train synthetic smoke-test model
+        run: |
+          python -m pip install -e ".[dev]"
+          python scripts/generate_synthetic.py
+          python scripts/train.py --data data/synthetic/churn.csv
+          pytest -q
+      - name: Inspect runner capacity
+        run: |
+          nproc
+          free -h
+          df -h .
+          docker version
+      - name: Build inference image
+        run: docker build -t churn-lab:${{ github.sha }} .
+      - name: Launch two CPU/memory-limited replicas
+        run: |
+          mkdir -p artifacts
+          docker run -d --name churn-replica-1 --cpus=0.5 --memory=1g --pids-limit=128 \
+            -p 127.0.0.1:18001:8000 \
+            -v "$PWD/artifacts:/app/artifacts:ro" \
+            -e MODEL_PATH=/app/artifacts/churn_pipeline.joblib \
+            churn-lab:${{ github.sha }}
+          docker run -d --name churn-replica-2 --cpus=0.5 --memory=1g --pids-limit=128 \
+            -p 127.0.0.1:18002:8000 \
+            -v "$PWD/artifacts:/app/artifacts:ro" \
+            -e MODEL_PATH=/app/artifacts/churn_pipeline.joblib \
+            churn-lab:${{ github.sha }}
+          docker inspect --format '{{.Name}} Memory={{.HostConfig.Memory}} NanoCPUs={{.HostConfig.NanoCpus}}' churn-replica-1 churn-replica-2
+      - name: Probe both replicas and perform bounded load test
+        run: |
+          python - <<'PY'
+          import concurrent.futures
+          import statistics
+          import time
+          import urllib.error
+          import urllib.request
+          import json
+
+          for port in (18001, 18002):
+              for attempt in range(45):
+                  try:
+                      with urllib.request.urlopen(f"http://127.0.0.1:{port}/health/ready", timeout=2) as response:
+                          if response.status == 200:
+                              break
+                  except (urllib.error.URLError, TimeoutError):
+                      time.sleep(2)
+              else:
+                  raise RuntimeError(f"Replica {port} never became ready")
+              with urllib.request.urlopen(f"http://127.0.0.1:{port}/health/live", timeout=5) as response:
+                  assert response.status == 200
+
+          def request(i):
+              port = (18001, 18002)[i % 2]
+              payload = json.dumps({"features": {"tenure": 12, "MonthlyCharges": 75, "TotalCharges": 900, "Contract": "Month-to-month"}}).encode()
+              req = urllib.request.Request(
+                  f"http://127.0.0.1:{port}/predict", data=payload,
+                  headers={"Content-Type": "application/json"}, method="POST")
+              start = time.monotonic()
+              with urllib.request.urlopen(req, timeout=15) as response:
+                  assert response.status == 200
+                  result = json.load(response)
+                  assert "churn_probability" in result and "model_version" in result
+              return (time.monotonic() - start) * 1000
+
+          with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+              latencies = list(pool.map(request, range(40)))
+          ordered = sorted(latencies)
+          print(f"Successful predictions: {len(latencies)}/40")
+          print(f"Mean latency: {statistics.mean(latencies):.1f} ms")
+          print(f"P95 latency (nearest rank): {ordered[37]:.1f} ms")
+          PY
+      - name: Record resource observations
+        if: always()
+        run: |
+          docker ps -a || true
+          docker stats --no-stream || true
+          df -h . || true
+          docker logs --tail 30 churn-replica-1 || true
+          docker logs --tail 30 churn-replica-2 || true
+      - name: Cleanup
+        if: always()
+        run: docker rm -f churn-replica-1 churn-replica-2 || true
