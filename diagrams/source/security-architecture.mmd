@@ -1,0 +1,8 @@
+flowchart LR
+  Client["Client"] --> TLS["TLS + Gateway Auth"]
+  TLS --> Validation["Input Validation"]
+  Validation --> API["Least-Privilege API"]
+  API --> Model["Trusted Model Artifact"]
+  API --> Metrics["Low-Cardinality Metrics"]
+  Secrets["Secret Manager"] -.-> API
+  Scanner["CI Security Scanner"] -.-> Model
