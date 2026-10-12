@@ -51,6 +51,7 @@ jobs:
           import time
           import urllib.error
           import urllib.request
+          import http.client
           import json
 
           for port in (18001, 18002):
@@ -59,10 +60,10 @@ jobs:
                       with urllib.request.urlopen(f"http://127.0.0.1:{port}/health/ready", timeout=2) as response:
                           if response.status == 200:
                               break
-                  except (urllib.error.URLError, TimeoutError):
+                  except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, http.client.HTTPException):
                       time.sleep(2)
               else:
-                  raise RuntimeError(f"Replica {port} never became ready")
+                  raise RuntimeError(f"Replica {port} never became ready; check container logs")
               with urllib.request.urlopen(f"http://127.0.0.1:{port}/health/live", timeout=5) as response:
                   assert response.status == 200
 
