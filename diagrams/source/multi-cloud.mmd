@@ -1,0 +1,5 @@
+flowchart TB
+  Source["Cloud-Neutral App + Terraform/OpenTofu"] --> AWS["AWS ECR / EKS"]
+  Source --> Azure["Azure ACR / AKS"]
+  Source --> GCP["GCP Artifact Registry / GKE"]
+  Source --> Private["Private Cloud / OpenShift"]
