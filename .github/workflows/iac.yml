@@ -1,0 +1,28 @@
+name: iac-validation
+on:
+  push:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/iac.yml"
+  pull_request:
+    paths:
+      - "terraform/**"
+      - ".github/workflows/iac.yml"
+permissions:
+  contents: read
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cloud: [aws, azure, gcp]
+    defaults:
+      run:
+        working-directory: terraform/${{ matrix.cloud }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform fmt -check -recursive
+      - run: terraform init -backend=false
+      - run: terraform validate
