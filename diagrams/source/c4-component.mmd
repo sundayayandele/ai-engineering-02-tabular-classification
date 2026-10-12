@@ -1,0 +1,7 @@
+flowchart LR
+  Request["Prediction Request"] --> Schema["Pydantic Schema"]
+  Schema --> Loader["Cached Model Loader"]
+  Loader --> Preprocess["Impute / Scale / Encode"]
+  Preprocess --> Classifier["Logistic Regression"]
+  Classifier --> Threshold["Decision Threshold"]
+  Threshold --> Response["Probability + Label + Version"]
