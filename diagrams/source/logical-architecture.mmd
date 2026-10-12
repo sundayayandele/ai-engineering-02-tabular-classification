@@ -1,0 +1,8 @@
+flowchart LR
+  CRM["CRM / Authorized Client"] --> Gateway["API Gateway"]
+  Gateway --> API["FastAPI Churn Service"]
+  API --> Features["Feature Validation"]
+  Features --> Model["Preprocessing + Classifier"]
+  Model --> Decision["Threshold / Churn Probability"]
+  Decision --> CRM
+  API --> Metrics["Prometheus Metrics"]
