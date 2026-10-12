@@ -1,0 +1,4 @@
+flowchart LR
+  Route["OpenShift TLS Route"] --> Service["Service"]
+  Service --> Pod1["Restricted-SCC Pod 1"]
+  Service --> Pod2["Restricted-SCC Pod 2"]
