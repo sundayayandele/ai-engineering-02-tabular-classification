@@ -1,0 +1,9 @@
+flowchart TB
+  Client["Authorized Client"] --> Ingress["TLS Ingress / OpenShift Route"]
+  Ingress --> Service["Kubernetes Service"]
+  Service --> Pod1["FastAPI Pod 1"]
+  Service --> Pod2["FastAPI Pod 2"]
+  Pod1 --> Artifact["Approved Model Artifact"]
+  Pod2 --> Artifact
+  Pod1 --> Prom["Prometheus"]
+  Pod2 --> Prom
