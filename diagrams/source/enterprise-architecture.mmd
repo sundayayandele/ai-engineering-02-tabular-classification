@@ -1,0 +1,5 @@
+flowchart TB
+  Business["Business: Retention Strategy and Customer Success"] --> Application["Application: Churn Prediction API"]
+  Application --> Data["Data: Governed Customer Features and Model Artifacts"]
+  Data --> Technology["Technology: Containers, Kubernetes/OpenShift, Monitoring"]
+  Governance["Governance: Identity, Privacy, Model Risk"] -.-> Application
