@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-engineering-02-tabular-classification"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "pandas>=2.2,<3",
+  "numpy>=1.26,<3",
+  "scikit-learn>=1.5,<2",
+  "joblib>=1.4,<2",
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.32,<1",
+  "prometheus-client>=0.21,<1",
+]
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.7", "pip-audit>=2.7"]
+mlops = ["mlflow>=2.18", "shap>=0.46"]
+boosting = ["xgboost>=2.1", "lightgbm>=4.5"]
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.pytest.ini_options]
+pythonpath = ["src", "."]
+testpaths = ["tests"]
+[tool.ruff]
+line-length = 100
+target-version = "py312"
