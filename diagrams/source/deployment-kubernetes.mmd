@@ -1,0 +1,6 @@
+flowchart LR
+  Ingress["Ingress"] --> Service["Service"]
+  Service --> Pod1["Replica 1"]
+  Service --> Pod2["Replica 2"]
+  HPA["Horizontal Autoscaler"] -.-> Pod1
+  HPA -.-> Pod2
