@@ -1,0 +1,25 @@
+name: education-smoke
+on:
+  push:
+    paths:
+      - "src/**"
+      - "scripts/**"
+      - "app/**"
+      - "pyproject.toml"
+      - ".github/workflows/education.yml"
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  train-and-infer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: python scripts/generate_synthetic.py
+      - run: python scripts/train.py --data data/synthetic/churn.csv
+      - run: python -c "from churn_classifier.model import ChurnModel; m=ChurnModel.load('artifacts/churn_pipeline.joblib'); print(m.predict({'tenure':12,'MonthlyCharges':75,'Contract':'Month-to-month'}))"
+      - run: pytest -q
