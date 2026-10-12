@@ -1,0 +1,5 @@
+flowchart LR
+  API["FastAPI Service"] --> Metrics["Prometheus Metrics"]
+  Metrics --> Dashboard["Grafana Dashboard"]
+  Metrics --> Alerts["Alert Rules"]
+  Evaluation["Ground Truth Evaluation"] --> Drift["Model Quality / Drift Review"]
