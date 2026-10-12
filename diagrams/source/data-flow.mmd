@@ -1,0 +1,9 @@
+flowchart LR
+  Dataset["Licensed Customer Churn CSV"] --> Validation["Data Validation"]
+  Validation --> Split["Stratified Train/Test Split"]
+  Split --> Pipeline["Fold-safe Preprocessing"]
+  Pipeline --> Training["Logistic Regression Training"]
+  Training --> Evaluation["ROC-AUC / PR-AUC / F1 / Brier"]
+  Evaluation --> Approval["Human Model Promotion"]
+  Approval --> Registry["Immutable Model Artifact"]
+  Registry --> Serving["FastAPI Inference"]
